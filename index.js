@@ -79,34 +79,35 @@ async function startBaileys() {
 
     sock.ev.on('creds.update', saveCreds);
 
-    // ── Request pairing code instead of QR (works on Render logs) ──────────────
-    sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect, isNewLogin } = update;
-
-        // Request pairing code when not yet registered
-        if (isNewLogin) {
-            const phone = process.env.PAIRING_PHONE; // e.g. 919876543210
-            if (phone) {
-                try {
-                    const code = await sock.requestPairingCode(phone);
-                    console.log('\n╔══════════════════════════════════════╗');
-                    console.log('║  📱 WHATSAPP PAIRING CODE            ║');
-                    console.log(`║     👉  ${code}  👈               ║`);
-                    console.log('╠══════════════════════════════════════╣');
-                    console.log('║  Steps to link:                      ║');
-                    console.log('║  1. Open WhatsApp on your phone      ║');
-                    console.log('║  2. Settings → Linked Devices        ║');
-                    console.log('║  3. Link with Phone Number           ║');
-                    console.log('║  4. Enter the code above             ║');
-                    console.log('╚══════════════════════════════════════╝\n');
-                } catch (err) {
-                    console.error('❌ Failed to get pairing code:', err.message);
-                }
-            } else {
-                console.log('⚠️  PAIRING_PHONE env var not set. Add it in Render environment variables.');
-                console.log('    Example: PAIRING_PHONE=919876543210  (91 + your 10-digit number)\n');
+    // ── Request pairing code immediately if not yet linked ──────────────────────
+    if (!sock.authState.creds.registered) {
+        const phone = process.env.PAIRING_PHONE; // e.g. 919876543210
+        if (phone) {
+            // Small delay to let socket initialise before requesting code
+            await new Promise(r => setTimeout(r, 3000));
+            try {
+                const code = await sock.requestPairingCode(phone);
+                console.log('\n╔══════════════════════════════════════╗');
+                console.log('║   📱  WHATSAPP PAIRING CODE          ║');
+                console.log(`║       👉  ${code}  👈               ║`);
+                console.log('╠══════════════════════════════════════╣');
+                console.log('║  1. Open WhatsApp on your phone      ║');
+                console.log('║  2. Settings → Linked Devices        ║');
+                console.log('║  3. Link with Phone Number           ║');
+                console.log('║  4. Enter the code above  ☝️          ║');
+                console.log('╚══════════════════════════════════════╝\n');
+            } catch (err) {
+                console.error('❌ Could not get pairing code:', err.message);
             }
+        } else {
+            console.warn('\n⚠️  Set PAIRING_PHONE in Render Environment Variables!');
+            console.warn('    Example: PAIRING_PHONE=919876543210\n');
         }
+    }
+
+    // ── Connection events ───────────────────────────────────────────────────────
+    sock.ev.on('connection.update', async (update) => {
+        const { connection, lastDisconnect } = update;
 
         if (connection === 'open') {
             isConnected = true;
@@ -123,7 +124,7 @@ async function startBaileys() {
             if (shouldReconnect) {
                 setTimeout(startBaileys, 3000);
             } else {
-                console.log('🚫 Logged out. Clear session and restart to re-pair.');
+                console.log('🚫 Logged out. Clear session env and restart to re-pair.');
             }
         }
     });
