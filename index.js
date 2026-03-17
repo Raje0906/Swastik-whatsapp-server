@@ -79,39 +79,19 @@ async function startBaileys() {
 
     sock.ev.on('creds.update', saveCreds);
 
-    // ── Request pairing code immediately if not yet linked ──────────────────────
-    if (!sock.authState.creds.registered) {
-        const phone = process.env.PAIRING_PHONE; // e.g. 919876543210
-        if (phone) {
-            // Small delay to let socket initialise before requesting code
-            await new Promise(r => setTimeout(r, 3000));
-            try {
-                const code = await sock.requestPairingCode(phone);
-                console.log('\n╔══════════════════════════════════════╗');
-                console.log('║   📱  WHATSAPP PAIRING CODE          ║');
-                console.log(`║       👉  ${code}  👈               ║`);
-                console.log('╠══════════════════════════════════════╣');
-                console.log('║  1. Open WhatsApp on your phone      ║');
-                console.log('║  2. Settings → Linked Devices        ║');
-                console.log('║  3. Link with Phone Number           ║');
-                console.log('║  4. Enter the code above  ☝️          ║');
-                console.log('╚══════════════════════════════════════╝\n');
-            } catch (err) {
-                console.error('❌ Could not get pairing code:', err.message);
-            }
-        } else {
-            console.warn('\n⚠️  Set PAIRING_PHONE in Render Environment Variables!');
-            console.warn('    Example: PAIRING_PHONE=919876543210\n');
-        }
-    }
-
-    // ── Connection events ───────────────────────────────────────────────────────
     sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect } = update;
+        const { connection, lastDisconnect, qr } = update;
+
+        if (qr) {
+            console.log('\n📱 Scan this QR code with your WhatsApp to link the session:\n');
+            qrcode.generate(qr, { small: true });
+        }
 
         if (connection === 'open') {
             isConnected = true;
-            console.log('✅ WhatsApp connected successfully!');
+            console.log('\n✅ WhatsApp connected successfully!');
+            console.log('📂 Session saved to whatsapp-server/baileys/session/');
+            console.log('You can now press Ctrl+C to stop this local server.');
         }
 
         if (connection === 'close') {
