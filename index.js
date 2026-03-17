@@ -79,13 +79,33 @@ async function startBaileys() {
 
     sock.ev.on('creds.update', saveCreds);
 
+    // ── Request pairing code instead of QR (works on Render logs) ──────────────
     sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect, qr } = update;
+        const { connection, lastDisconnect, isNewLogin } = update;
 
-        if (qr) {
-            console.log('\n📱 Scan this QR code with your WhatsApp to link the session:\n');
-            qrcode.generate(qr, { small: true });
-            console.log('\n⚠️  On Render.com: Go to your service → Logs tab to see this QR code.\n');
+        // Request pairing code when not yet registered
+        if (isNewLogin) {
+            const phone = process.env.PAIRING_PHONE; // e.g. 919876543210
+            if (phone) {
+                try {
+                    const code = await sock.requestPairingCode(phone);
+                    console.log('\n╔══════════════════════════════════════╗');
+                    console.log('║  📱 WHATSAPP PAIRING CODE            ║');
+                    console.log(`║     👉  ${code}  👈               ║`);
+                    console.log('╠══════════════════════════════════════╣');
+                    console.log('║  Steps to link:                      ║');
+                    console.log('║  1. Open WhatsApp on your phone      ║');
+                    console.log('║  2. Settings → Linked Devices        ║');
+                    console.log('║  3. Link with Phone Number           ║');
+                    console.log('║  4. Enter the code above             ║');
+                    console.log('╚══════════════════════════════════════╝\n');
+                } catch (err) {
+                    console.error('❌ Failed to get pairing code:', err.message);
+                }
+            } else {
+                console.log('⚠️  PAIRING_PHONE env var not set. Add it in Render environment variables.');
+                console.log('    Example: PAIRING_PHONE=919876543210  (91 + your 10-digit number)\n');
+            }
         }
 
         if (connection === 'open') {
@@ -103,7 +123,7 @@ async function startBaileys() {
             if (shouldReconnect) {
                 setTimeout(startBaileys, 3000);
             } else {
-                console.log('🚫 Logged out. Delete the session folder and restart to re-scan QR.');
+                console.log('🚫 Logged out. Clear session and restart to re-pair.');
             }
         }
     });
