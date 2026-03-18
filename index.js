@@ -8,10 +8,29 @@ import fs from 'fs';
 import { Boom } from '@hapi/boom';
 
 // ─── Config ────────────────────────────────────────────────────────────────────
-const __dirname    = path.dirname(fileURLToPath(import.meta.url));
-const SESSION_DIR  = path.join(__dirname, 'baileys', 'session');
-const PORT         = process.env.PORT || 3000;
-const PAYMENT_LINK = process.env.PAYMENT_LINK || 'https://your-payment-link.com';
+const __dirname   = path.dirname(fileURLToPath(import.meta.url));
+const SESSION_DIR = path.join(__dirname, 'baileys', 'session');
+const PORT        = process.env.PORT || 3000;
+
+/**
+ * Fixed payment links per internship duration.
+ * Amounts are PREDEFINED — students cannot change the price.
+ *
+ * Replace each URL with your actual Razorpay / InstaMojo / UPI payment page
+ * that has the amount LOCKED (use "payment page" or "payment button" links
+ * where the amount is fixed on your dashboard, not a general QR).
+ *
+ *  1 month  → ₹199
+ *  2 months → ₹299
+ *  3 months → ₹399
+ *  6 months → ₹499
+ */
+const PRICING_MAP = {
+    1: { amount: 199, link: process.env.PAYMENT_LINK_1M || 'https://rzp.io/l/internship-1month' },
+    2: { amount: 299, link: process.env.PAYMENT_LINK_2M || 'https://rzp.io/l/internship-2month' },
+    3: { amount: 399, link: process.env.PAYMENT_LINK_3M || 'https://rzp.io/l/internship-3month' },
+    6: { amount: 499, link: process.env.PAYMENT_LINK_6M || 'https://rzp.io/l/internship-6month' },
+};
 
 // Ensure session directory exists
 if (!fs.existsSync(SESSION_DIR)) fs.mkdirSync(SESSION_DIR, { recursive: true });
@@ -23,15 +42,19 @@ const logger = pino({ level: 'silent' });
 /**
  * @param {'internship' | 'training'} type
  * @param {string} name
+ * @param {1|2|3|6} [months]  — required for internship type
  */
-function buildMessage(type, name) {
+function buildMessage(type, name, months) {
     if (type === 'internship') {
+        const { link: paymentLink, amount } = PRICING_MAP[months];
         return (
             `Hello ${name}! 👋\n\n` +
             `Thank you for your interest in the *Swastik Software Solutions* Internship Program! 🎉\n\n` +
             `We've received your application and are excited to have you on board.\n\n` +
+            `📅 *Duration:* ${months} Month${months > 1 ? 's' : ''}\n` +
+            `💰 *Amount:* ₹${amount}\n\n` +
             `To confirm your seat and receive your *Offer Letter*, please complete the payment using the link below:\n\n` +
-            `💳 *Payment Link:* ${PAYMENT_LINK}\n\n` +
+            `💳 *Payment Link:* ${paymentLink}\n\n` +
             `Once the payment is done, your Offer Letter will be generated and sent to you.\n\n` +
             `Feel free to reach out if you have any questions.\n\n` +
             `Best Regards,\n` +
@@ -120,9 +143,9 @@ app.get('/ping', (req, res) => {
 });
 
 // ── POST /send-whatsapp ────────────────────────────────────────────────────────
-// Body: { phone: "9XXXXXXXXX", name: "Applicant", type: "internship" | "training" }
+// Body: { phone: "9XXXXXXXXX", name: "Applicant", type: "internship" | "training", months: 1|2|3|6 }
 app.post('/send-whatsapp', async (req, res) => {
-    const { phone, name, type } = req.body;
+    const { phone, name, type, months: rawMonths } = req.body;
 
     // Validate required fields
     if (!phone || !name) {
@@ -130,6 +153,18 @@ app.post('/send-whatsapp', async (req, res) => {
     }
     if (!type || !['internship', 'training'].includes(type)) {
         return res.status(400).json({ success: false, error: '"type" must be "internship" or "training".' });
+    }
+
+    // For internship, validate months and look up the server-locked price
+    let months = null;
+    if (type === 'internship') {
+        months = parseInt(rawMonths, 10);
+        if (!PRICING_MAP[months]) {
+            return res.status(400).json({
+                success: false,
+                error: `"months" must be one of: ${Object.keys(PRICING_MAP).join(', ')} for internship type.`,
+            });
+        }
     }
     if (!isConnected || !sock) {
         return res.status(503).json({ success: false, error: 'WhatsApp not connected yet. Please retry in a moment.' });
@@ -142,11 +177,12 @@ app.post('/send-whatsapp', async (req, res) => {
     }
     const jid = `91${cleaned}@s.whatsapp.net`;
 
-    const message = buildMessage(type, name);
+    const message = buildMessage(type, name, months);
 
     try {
         await sock.sendMessage(jid, { text: message });
-        console.log(`✉️  [${type.toUpperCase()}] WhatsApp sent → ${jid} (${name})`);
+        const tag = type === 'internship' ? `INTERNSHIP-${months}mo` : 'TRAINING';
+        console.log(`✉️  [${tag}] WhatsApp sent → ${jid} (${name}) | ₹${months ? PRICING_MAP[months].amount : 'N/A'}`);
         return res.json({ success: true, message: `WhatsApp sent to ${jid}` });
     } catch (err) {
         console.error('❌ Failed to send WhatsApp:', err);
@@ -157,8 +193,9 @@ app.post('/send-whatsapp', async (req, res) => {
 // ─── Start ───────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
     console.log(`\n🚀 WhatsApp server running on port ${PORT}`);
-    console.log(`   POST /send-whatsapp  { phone, name, type: "internship"|"training" }`);
-    console.log(`   GET  /ping           Health check (UptimeRobot)\n`);
+    console.log(`   POST /send-whatsapp  { phone, name, type: "internship"|"training", months: 1|2|3|6 }`);
+    console.log(`   GET  /ping           Health check (UptimeRobot)`);
+    console.log(`   💰 Locked prices → 1mo:₹199  2mo:₹299  3mo:₹399  6mo:₹499\n`);
 });
 
 startBaileys();
