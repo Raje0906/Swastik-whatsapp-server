@@ -54,7 +54,7 @@ function buildMessage(type, name, months) {
             `📅 *Duration:* ${months} Month${months > 1 ? 's' : ''}\n` +
             `💰 *Amount:* ₹${amount}\n\n` +
             `To confirm your seat and receive your *Offer Letter*, please scan the attached QR code or pay to the UPI ID below:\n\n` +
-            `🏦 *UPI ID:* ${process.env.UPI_ID || 'rajeaditya999-2@oksbi'}\n\n` +
+            `🏦 *UPI ID:* ${process.env.UPI_ID || '9637437477@kotak811'}\n\n` +
             `📸 *Important:* Once the payment is completed, please reply to this message with a screenshot of your successful transaction.\n\n` +
             `Feel free to reach out if you have any questions.\n\n` +
             `Best Regards,\n` +
