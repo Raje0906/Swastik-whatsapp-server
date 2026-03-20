@@ -53,9 +53,9 @@ function buildMessage(type, name, months) {
             `We've received your application and are excited to have you on board.\n\n` +
             `📅 *Duration:* ${months} Month${months > 1 ? 's' : ''}\n` +
             `💰 *Amount:* ₹${amount}\n\n` +
-            `To confirm your seat and receive your *Offer Letter*, please complete the payment using the link below:\n\n` +
-            `💳 *Payment Link:* ${paymentLink}\n\n` +
-            `Once the payment is done, your Offer Letter will be generated and sent to you.\n\n` +
+            `To confirm your seat and receive your *Offer Letter*, please scan the attached QR code or pay to the UPI ID below:\n\n` +
+            `🏦 *UPI ID:* ${process.env.UPI_ID || 'rajeaditya999-2@oksbi'}\n\n` +
+            `📸 *Important:* Once the payment is completed, please reply to this message with a screenshot of your successful transaction.\n\n` +
             `Feel free to reach out if you have any questions.\n\n` +
             `Best Regards,\n` +
             `*Swastik Software Solutions Team* 🏢`
@@ -180,7 +180,18 @@ app.post('/send-whatsapp', async (req, res) => {
     const message = buildMessage(type, name, months);
 
     try {
-        await sock.sendMessage(jid, { text: message });
+        if (type === 'internship') {
+            const qrPath = path.join(__dirname, 'qr_code.jpg');
+            // If we find the QR image in the server folder, send as Image + Caption
+            if (fs.existsSync(qrPath)) {
+                await sock.sendMessage(jid, { image: { url: qrPath }, caption: message });
+            } else {
+                // Fallback to purely text if the QR image is not found
+                await sock.sendMessage(jid, { text: message });
+            }
+        } else {
+            await sock.sendMessage(jid, { text: message });
+        }
         const tag = type === 'internship' ? `INTERNSHIP-${months}mo` : 'TRAINING';
         console.log(`✉️  [${tag}] WhatsApp sent → ${jid} (${name}) | ₹${months ? PRICING_MAP[months].amount : 'N/A'}`);
         return res.json({ success: true, message: `WhatsApp sent to ${jid}` });
