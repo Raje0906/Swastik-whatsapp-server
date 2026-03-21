@@ -51,10 +51,10 @@ function buildMessage(type, name, months) {
             `Hello ${name}! 👋\n\n` +
             `Thank you for your interest in the *Swastik Software Solutions* Internship Program! 🎉\n\n` +
             `We've received your application and are excited to have you on board.\n\n` +
-            `📅 *Duration:* ${months} Month${months > 1 ? 's' : ''}\n` +
-            `💰 *Amount:* ₹${amount}\n\n` +
+            `*Duration:* ${months} Month${months > 1 ? 's' : ''}\n` +
+            `*Amount:* ₹${amount}\n\n` +
             `To confirm your seat and receive your *Offer Letter*, please scan the attached QR code or pay to the UPI ID below:\n\n` +
-            `🏦 *UPI ID:* 9637437477@kotak811\n\n` +
+            `🏦 *UPI ID:* rashmee.raje-3@okhdfcbank\n\n` +
             `📸 *Important:* Once the payment is completed, please upload the *Screenshot of your Successful Transaction* as well as your *Weekly Task URLs* to the Google Form linked below:\n\n` +
             `🔗 *Submission Form:* https://docs.google.com/forms/d/e/1FAIpQLSdjQXbQzZoqX0BrvbQ6fMBfiXtdebJPoij4NrHteSgm2Egj1A/viewform\n\n` +
             `Feel free to reach out if you have any questions.\n\n` +
