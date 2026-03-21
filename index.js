@@ -8,9 +8,9 @@ import fs from 'fs';
 import { Boom } from '@hapi/boom';
 
 // ─── Config ────────────────────────────────────────────────────────────────────
-const __dirname   = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SESSION_DIR = path.join(__dirname, 'baileys', 'session');
-const PORT        = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 /**
  * Fixed payment links per internship duration.
@@ -58,6 +58,7 @@ function buildMessage(type, name, months) {
             `📸 *Important:* Once the payment is completed, please upload the *Screenshot of your Successful Transaction* as well as your *Weekly Task URLs* to the Google Form linked below:\n\n` +
             `🔗 *Submission Form:* https://docs.google.com/forms/d/e/1FAIpQLSdjQXbQzZoqX0BrvbQ6fMBfiXtdebJPoij4NrHteSgm2Egj1A/viewform\n\n` +
             `Feel free to reach out if you have any questions.\n\n` +
+            `After Payment you will receive your Offer Letter within 2 hours. Check your Email primary and spam folders, in case you don't receive it within 2 hours contact us.\n` +
             `Best Regards,\n` +
             `*Swastik Software Solutions Team* 🏢`
         );
