@@ -95,12 +95,19 @@ async function startBaileys() {
     sock = makeWASocket({
         version,
         auth: state,
-        logger,
+        logger: pino({ level: 'silent' }), // keeping it silent but let's log the error explicitly below
         printQRInTerminal: false,
-        browser: ['Swastik Server', 'Chrome', '1.0.0'],
+        // Using a standard browser configuration instead of a custom one, 
+        // as WhatsApp actively blocks non-standard or custom browser strings now.
+        browser: ['Windows', 'Chrome', '111.0.0.0'],
     });
 
     sock.ev.on('creds.update', saveCreds);
+
+    // Add error listener to see if there's any unhandled stream error
+    sock.ws.on('error', (err) => {
+        console.error('Socket error:', err);
+    });
 
     sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect, qr } = update;
@@ -123,6 +130,7 @@ async function startBaileys() {
                 lastDisconnect?.error instanceof Boom &&
                 lastDisconnect.error.output?.statusCode !== DisconnectReason.loggedOut;
 
+            console.error('Connection closed details:', lastDisconnect?.error?.message || lastDisconnect?.error);
             console.log(`❌ Connection closed. Reconnecting: ${shouldReconnect}`);
             if (shouldReconnect) {
                 setTimeout(startBaileys, 3000);

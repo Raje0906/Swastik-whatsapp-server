@@ -1,0 +1,43 @@
+
+🚀 WhatsApp server running on port 3000
+   POST /send-whatsapp  { phone, name, type: "internship"|"training", months: 1|2|3|6 }
+   GET  /ping           Health check (UptimeRobot)
+   💰 Locked prices → 1mo:₹199  2mo:₹299  3mo:₹399  6mo:₹499
+
+
+🔌 Connecting to WhatsApp (Baileys v2.3000.1035194821)...
+
+✅ WhatsApp connected successfully!
+📂 Session saved to whatsapp-server/baileys/session/
+You can now press Ctrl+C to stop this local server.
+Connection closed details: Stream Errored (conflict)
+❌ Connection closed. Reconnecting: true
+file:///C:/Users/Rajea/OneDrive/Desktop/Swastik%20whatsapp%20trigeer/whatsapp-server/node_modules/@whiskeysockets/baileys/lib/Socket/socket.js:56
+            throw new Boom('Connection Closed', { statusCode: DisconnectReason.connectionClosed });
+                  ^
+
+Error: Connection Closed
+    at sendRawMessage (file:///C:/Users/Rajea/OneDrive/Desktop/Swastik%20whatsapp%20trigeer/whatsapp-server/node_modules/@whiskeysockets/baileys/lib/Socket/socket.js:56:19)
+    at sendNode (file:///C:/Users/Rajea/OneDrive/Desktop/Swastik%20whatsapp%20trigeer/whatsapp-server/node_modules/@whiskeysockets/baileys/lib/Socket/socket.js:75:16)
+    at file:///C:/Users/Rajea/OneDrive/Desktop/Swastik%20whatsapp%20trigeer/whatsapp-server/node_modules/@whiskeysockets/baileys/lib/Socket/messages-send.js:487:19
+    at async Object.transaction (file:///C:/Users/Rajea/OneDrive/Desktop/Swastik%20whatsapp%20trigeer/whatsapp-server/node_modules/@whiskeysockets/baileys/lib/Utils/auth-utils.js:126:26)
+    at async relayMessage (file:///C:/Users/Rajea/OneDrive/Desktop/Swastik%20whatsapp%20trigeer/whatsapp-server/node_modules/@whiskeysockets/baileys/lib/Socket/messages-send.js:288:9)
+    at async sendPeerDataOperationMessage (file:///C:/Users/Rajea/OneDrive/Desktop/Swastik%20whatsapp%20trigeer/whatsapp-server/node_modules/@whiskeysockets/baileys/lib/Socket/messages-send.js:211:23)
+    at async sendRetryRequest (file:///C:/Users/Rajea/OneDrive/Desktop/Swastik%20whatsapp%20trigeer/whatsapp-server/node_modules/@whiskeysockets/baileys/lib/Socket/messages-recv.js:100:27)
+    at async file:///C:/Users/Rajea/OneDrive/Desktop/Swastik%20whatsapp%20trigeer/whatsapp-server/node_modules/@whiskeysockets/baileys/lib/Socket/messages-recv.js:661:33
+    at async file:///C:/Users/Rajea/OneDrive/Desktop/Swastik%20whatsapp%20trigeer/whatsapp-server/node_modules/@whiskeysockets/baileys/lib/Utils/make-mutex.js:16:36 {
+  data: null,
+  isBoom: true,
+  isServer: false,
+  output: {
+    statusCode: 428,
+    payload: {
+      statusCode: 428,
+      error: 'Precondition Required',
+      message: 'Connection Closed'
+    },
+    headers: {}
+  }
+}
+
+Node.js v22.14.0
