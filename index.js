@@ -55,7 +55,8 @@ function buildMessage(type, name, months) {
             `💰 *Amount:* ₹${amount}\n\n` +
             `To confirm your seat and receive your *Offer Letter*, please scan the attached QR code or pay to the UPI ID below:\n\n` +
             `🏦 *UPI ID:* 9637437477@kotak811\n\n` +
-            `📸 *Important:* Once the payment is completed, please reply to this message with a screenshot of your successful transaction.\n\n` +
+            `📸 *Important:* Once the payment is completed, please upload the *Screenshot of your Successful Transaction* as well as your *Weekly Task URLs* to the Google Form linked below:\n\n` +
+            `🔗 *Submission Form:* https://docs.google.com/forms/d/e/1FAIpQLSdjQXbQzZoqX0BrvbQ6fMBfiXtdebJPoij4NrHteSgm2Egj1A/viewform\n\n` +
             `Feel free to reach out if you have any questions.\n\n` +
             `Best Regards,\n` +
             `*Swastik Software Solutions Team* 🏢`
